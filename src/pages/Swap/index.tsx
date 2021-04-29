@@ -1,7 +1,11 @@
 import { CurrencyAmount, JSBI, Token, Trade } from '@uniswap/sdk'
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+
+// import styled from 'styled-components'
+// import { darken } from 'polished'
+
 import { ArrowDown } from 'react-feather'
-import ReactGA from 'react-ga'
+// import ReactGA from 'react-ga'
 import { Text } from 'rebass'
 import { ThemeContext } from 'styled-components'
 import AddressInputPanel from '../../components/AddressInputPanel'
@@ -14,20 +18,25 @@ import { SwapPoolTabs } from '../../components/NavigationTabs'
 import { AutoRow, RowBetween } from '../../components/Row'
 import AdvancedSwapDetailsDropdown from '../../components/swap/AdvancedSwapDetailsDropdown'
 import BetterTradeLink, { DefaultVersionLink } from '../../components/swap/BetterTradeLink'
-import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
+// import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
 import { ArrowWrapper, BottomGrouping, SwapCallbackError, Wrapper } from '../../components/swap/styleds'
 import TradePrice from '../../components/swap/TradePrice'
 import TokenWarningModal from '../../components/TokenWarningModal'
 import ProgressSteps from '../../components/ProgressSteps'
 import SwapHeader from '../../components/swap/SwapHeader'
 
+import GasModal from '../../components/BiconomyEstimator/GasModal'
+
 import { INITIAL_ALLOWED_SLIPPAGE } from '../../constants'
-import { getTradeVersion } from '../../data/V1'
+// import { getTradeVersion } from '../../data/V1'
 import { useActiveWeb3React } from '../../hooks'
 import { useCurrency, useAllTokens } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallbackFromTrade } from '../../hooks/useApproveCallback'
 import useENSAddress from '../../hooks/useENSAddress'
 import { useSwapCallback } from '../../hooks/useSwapCallback'
+import {
+  useBiconomySwapper
+} from '../../hooks/useSwapper'
 import useToggledVersion, { DEFAULT_VERSION, Version } from '../../hooks/useToggledVersion'
 import useWrapCallback, { WrapType } from '../../hooks/useWrapCallback'
 import { useToggleSettingsMenu, useWalletModalToggle } from '../../state/application/hooks'
@@ -38,6 +47,7 @@ import {
   useSwapActionHandlers,
   useSwapState
 } from '../../state/swap/hooks'
+
 import { useExpertModeManager, useUserSlippageTolerance, useUserSingleHopOnly } from '../../state/user/hooks'
 import { LinkStyledButton, TYPE } from '../../theme'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
@@ -48,10 +58,48 @@ import Loader from '../../components/Loader'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { isTradeBetter } from 'utils/trades'
-import { RouteComponentProps } from 'react-router-dom'
+// import { useChill, useSocksController } from "../../hooks/useContract";
+// import biconomy from '../../assets/images/biconomy.png'
+import { useWaitActionHandlers } from '../../state/waitmodal/hooks'
+import { useWaitState } from '../../state/waitmodal/hooks'
+// import { Contract } from '@ethersproject/contracts'
 
-export default function Swap({ history }: RouteComponentProps) {
+// const activeClassName = 'ACTIVE'
+
+// const StyledCenter = styled.div`
+//   align-items: left;
+//   border-radius: 3rem;
+//   outline: none;
+//   cursor: pointer;
+//   text-decoration: none;
+//   color: ${({ theme }) => theme.text2};
+//   font-size: 1rem;
+//   width: fit-content;
+//   margin: 10px 12px;
+//   font-weight: 600;
+
+//   &.${activeClassName} {
+//     border-radius: 12px;
+//     font-weight: 600;
+//     color: ${({ theme }) => theme.text1};
+//   }
+
+//   :hover,
+//   :focus {
+//     color: ${({ theme }) => darken(0.1, theme.text1)};
+//   }
+
+//   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+//       display: none;
+// `}
+// `
+
+export default function Swap() {
+  const [gasModalEnable, setGasModalEnable] = useState(false)
+  const [gasToken, setGasToken] = useState('')
   const loadedUrlParams = useDefaultsFromURLSearch()
+  const { onChangeGasModal } = useWaitActionHandlers()
+  const { isGasModal } = useWaitState()
 
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
@@ -99,6 +147,7 @@ export default function Swap({ history }: RouteComponentProps) {
     inputError: swapInputError
   } = useDerivedSwapInfo()
 
+
   const { wrapType, execute: onWrap, inputError: wrapInputError } = useWrapCallback(
     currencies[Field.INPUT],
     currencies[Field.OUTPUT],
@@ -113,6 +162,14 @@ export default function Swap({ history }: RouteComponentProps) {
   }
   const trade = showWrap ? undefined : tradesByVersion[toggledVersion]
   const defaultTrade = showWrap ? undefined : tradesByVersion[DEFAULT_VERSION]
+
+  let paths: any = []
+  let len: any | undefined = trade?.route?.path?.length
+  if(len>0) {
+    for(let i=0; i<parseInt(len); i++) {
+      paths[i] = trade?.route.path[i].address
+    }
+  }
 
   const betterTradeLinkV2: Version | undefined =
     toggledVersion === Version.v1 && isTradeBetter(v1Trade, v2Trade) ? Version.v2 : undefined
@@ -139,16 +196,10 @@ export default function Swap({ history }: RouteComponentProps) {
   )
   const handleTypeOutput = useCallback(
     (value: string) => {
-      onUserInput(Field.OUTPUT, value)
+      onUserInput(Field.OUTPUT, '')
     },
     [onUserInput]
   )
-
-  // reset if they close warning without tokens in params
-  const handleDismissTokenWarning = useCallback(() => {
-    setDismissTokenWarning(true)
-    history.push('/swap/')
-  }, [history])
 
   // modal and loading
   const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash }, setSwapState] = useState<{
@@ -194,65 +245,139 @@ export default function Swap({ history }: RouteComponentProps) {
   const maxAmountInput: CurrencyAmount | undefined = maxAmountSpend(currencyBalances[Field.INPUT])
   const atMaxAmountInput = Boolean(maxAmountInput && parsedAmounts[Field.INPUT]?.equalTo(maxAmountInput))
 
+  const { callback } = useBiconomySwapper(trade, allowedSlippage, recipient)
+
   // the callback to execute the swap
-  const { callback: swapCallback, error: swapCallbackError } = useSwapCallback(trade, allowedSlippage, recipient)
+  const {
+    // callback: swapCallback,
+    error: swapCallbackError
+  } = useSwapCallback(trade, allowedSlippage, recipient)
 
   const { priceImpactWithoutFee } = computeTradePriceBreakdown(trade)
 
   const [singleHopOnly] = useUserSingleHopOnly()
 
-  const handleSwap = useCallback(() => {
-    if (priceImpactWithoutFee && !confirmPriceImpactWithoutFee(priceImpactWithoutFee)) {
-      return
-    }
-    if (!swapCallback) {
-      return
-    }
-    setSwapState({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined })
-    swapCallback()
-      .then(hash => {
-        setSwapState({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash })
+  // const handleSwap = useCallback(async () => {
+  //   if (priceImpactWithoutFee && !confirmPriceImpactWithoutFee(priceImpactWithoutFee)) {
+  //     return
+  //   }
+  //   if (!swapCallback) {
+  //     return
+  //   }
+  //   setSwapState({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined })
 
-        ReactGA.event({
-          category: 'Swap',
-          action:
-            recipient === null
-              ? 'Swap w/o Send'
-              : (recipientAddress ?? recipient) === account
-              ? 'Swap w/o Send + recipient'
-              : 'Swap w/ Send',
-          label: [
-            trade?.inputAmount?.currency?.symbol,
-            trade?.outputAmount?.currency?.symbol,
-            getTradeVersion(trade)
-          ].join('/')
-        })
+  //   swapCallback()
+  //     .then(hash => {
+  //       setSwapState({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash })
+  //       ReactGA.event({
+  //         category: 'Swap',
+  //         action:
+  //           recipient === null
+  //             ? 'Swap w/o Send'
+  //             : (recipientAddress ?? recipient) === account
+  //             ? 'Swap w/o Send + recipient'
+  //             : 'Swap w/ Send',
+  //         label: [
+  //           trade?.inputAmount?.currency?.symbol,
+  //           trade?.outputAmount?.currency?.symbol,
+  //           getTradeVersion(trade)
+  //         ].join('/')
+  //       })
 
-        ReactGA.event({
-          category: 'Routing',
-          action: singleHopOnly ? 'Swap with multihop disabled' : 'Swap with multihop enabled'
-        })
-      })
-      .catch(error => {
-        setSwapState({
-          attemptingTxn: false,
-          tradeToConfirm,
-          showConfirm,
-          swapErrorMessage: error.message,
-          txHash: undefined
-        })
-      })
-  }, [
-    priceImpactWithoutFee,
-    swapCallback,
-    tradeToConfirm,
-    showConfirm,
-    recipient,
-    recipientAddress,
-    account,
-    trade,
-    singleHopOnly
-  ])
+  //       ReactGA.event({
+  //         category: 'Routing',
+  //         action: singleHopOnly ? 'Swap with multihop disabled' : 'Swap with multihop enabled'
+  //       })
+  //     })
+  //     .catch(error => {
+  //       setSwapState({
+  //         attemptingTxn: false,
+  //         tradeToConfirm,
+  //         showConfirm,
+  //         swapErrorMessage: error.message,
+  //         txHash: undefined
+  //       })
+  //     })
+  // }, [
+  //   priceImpactWithoutFee,
+  //   swapCallback,
+  //   tradeToConfirm,
+  //   showConfirm,
+  //   recipient,
+  //   recipientAddress,
+  //   account,
+  //   trade,
+  //   singleHopOnly
+  // ])
+
+  const handleDeposit = useCallback(async () => {
+    try {
+      if (!callback) {
+        return
+      }
+    } catch (error) {
+      console.log('Error: ', error)
+    }
+  }, [callback, gasToken])
+
+  const setGasTokenAndSwapCallback = useCallback(
+    (gasTokenValue: any) => {
+      try {
+        setGasToken(gasTokenValue)
+        if (!callback) {
+          return
+        }
+        callback(gasTokenValue)
+        // wipeInput()
+        // setGasModalEnable(false)
+      } catch (error) {
+        console.log('Error1: ', error)
+      }
+    },
+    [
+      gasToken, 
+      callback,
+      priceImpactWithoutFee,
+      tradeToConfirm,
+      showConfirm,
+      recipient,
+      recipientAddress,
+      account,
+      trade,
+      singleHopOnly
+    ]
+  )
+
+  const hadaleGasModalEnable = useCallback(async () => {
+    try {
+      if (gasModalEnable) {
+        setGasModalEnable(false)
+        // onUserInput(Field.INPUT, '')
+        // onUserInput(Field.OUTPUT, '')
+      } else {
+        setGasModalEnable(true)
+      }
+    } catch (error) {
+      console.log('Error: ', error)
+    }
+  }, [gasModalEnable])
+
+  const hadaleIsGasModal = useCallback(async () => {
+    try {
+      onChangeGasModal(true)
+    } catch (error) {
+      console.log('Error: ', error)
+    }
+  }, [isGasModal])
+
+  const wipeInput = useCallback(async () => {
+    try {
+      onUserInput(Field.INPUT, '')
+      onUserInput(Field.OUTPUT, '')
+    } catch (error) {
+      console.log('Error: ', error)
+    }
+  }, [])
 
   // errors
   const [showInverted, setShowInverted] = useState<boolean>(false)
@@ -282,7 +407,7 @@ export default function Swap({ history }: RouteComponentProps) {
   }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
 
   const handleInputSelect = useCallback(
-    inputCurrency => {
+    (inputCurrency: any) => {
       setApprovalSubmitted(false) // reset 2 step UI for approvals
       onCurrencySelection(Field.INPUT, inputCurrency)
     },
@@ -293,19 +418,19 @@ export default function Swap({ history }: RouteComponentProps) {
     maxAmountInput && onUserInput(Field.INPUT, maxAmountInput.toExact())
   }, [maxAmountInput, onUserInput])
 
-  const handleOutputSelect = useCallback(outputCurrency => onCurrencySelection(Field.OUTPUT, outputCurrency), [
+  const handleOutputSelect = useCallback((outputCurrency: any) => { 
+      onCurrencySelection(Field.OUTPUT, outputCurrency)
+    }, [
     onCurrencySelection
   ])
 
   const swapIsUnsupported = useIsTransactionUnsupported(currencies?.INPUT, currencies?.OUTPUT)
-
   return (
     <>
       <TokenWarningModal
         isOpen={importTokensNotInDefault.length > 0 && !dismissTokenWarning}
         tokens={importTokensNotInDefault}
         onConfirm={handleConfirmTokenWarning}
-        onDismiss={handleDismissTokenWarning}
       />
       <SwapPoolTabs active={'swap'} />
       <AppBody>
@@ -320,7 +445,7 @@ export default function Swap({ history }: RouteComponentProps) {
             txHash={txHash}
             recipient={recipient}
             allowedSlippage={allowedSlippage}
-            onConfirm={handleSwap}
+            onConfirm={handleDeposit}
             swapErrorMessage={swapErrorMessage}
             onDismiss={handleConfirmDismiss}
           />
@@ -345,6 +470,7 @@ export default function Swap({ history }: RouteComponentProps) {
                     onClick={() => {
                       setApprovalSubmitted(false) // reset 2 step UI for approvals
                       onSwitchTokens()
+                      wipeInput()
                     }}
                     color={currencies[Field.INPUT] && currencies[Field.OUTPUT] ? theme.primary1 : theme.text2}
                   />
@@ -410,7 +536,102 @@ export default function Swap({ history }: RouteComponentProps) {
               </Card>
             )}
           </AutoColumn>
-          <BottomGrouping>
+
+          {/* //Trial approve */}
+
+          {approval !== 3 ? (
+            <BottomGrouping>
+              {currencies[Field.INPUT]?.symbol == 'ETH' ? (
+                <GreyCard style={{ textAlign: 'center' }}>
+                  <TYPE.main mb="4px">ETH is not supported.</TYPE.main>
+                  {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
+                </GreyCard>) : 
+                currencies[Field.INPUT]?.symbol == 'MKR' ? (
+                  <GreyCard style={{ textAlign: 'center' }}>
+                    <TYPE.main mb="4px">MKR is not supported.</TYPE.main>
+                    {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
+                  </GreyCard>
+              ) : swapIsUnsupported ? (
+                <ButtonPrimary disabled={true}>
+                  <TYPE.main mb="4px">Unsupported Asset</TYPE.main>
+                </ButtonPrimary>
+              ) : !account ? (
+                <ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>
+              ) : showWrap ? (
+                <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap}>
+                  {wrapInputError ??
+                    (wrapType === WrapType.WRAP ? 'Wrap' : wrapType === WrapType.UNWRAP ? 'Unwrap' : null)}
+                </ButtonPrimary>
+              ) : noRoute && userHasSpecifiedInputOutput ? (
+                <GreyCard style={{ textAlign: 'center' }}>
+                  <TYPE.main mb="4px">Insufficient liquidity for this trade.</TYPE.main>
+                  {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
+                </GreyCard>
+              ) : (
+                <ButtonConfirmed
+                  onClick={approveCallback}
+                  disabled={approval !== ApprovalState.NOT_APPROVED || approvalSubmitted}
+                  width="100%"
+                  altDisabledStyle={approval === ApprovalState.PENDING} // show solid button while waiting
+                  confirmed={approval === ApprovalState.APPROVED}
+                >
+                  {approval === ApprovalState.PENDING ? (
+                    <AutoRow gap="6px" justify="center">
+                      Approving <Loader stroke="white" />
+                    </AutoRow>
+                  ) : approvalSubmitted && approval === ApprovalState.APPROVED ? (
+                    'Approved'
+                  ) : (
+                    'Approve ' + currencies[Field.INPUT]?.symbol
+                  )}
+                </ButtonConfirmed>
+              )}
+              {showApproveFlow && (
+                <Column style={{ marginTop: '1rem' }}>
+                  <ProgressSteps steps={[approval === ApprovalState.APPROVED]} />
+                </Column>
+              )}
+              {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
+              {betterTradeLinkV2 && !swapIsUnsupported && toggledVersion === Version.v1 ? (
+                <BetterTradeLink version={betterTradeLinkV2} />
+              ) : toggledVersion !== DEFAULT_VERSION && defaultTrade ? (
+                <DefaultVersionLink />
+              ) : null}
+            </BottomGrouping>
+          ) : currencies[Field.INPUT]?.symbol == 'ETH' ? (
+            <GreyCard style={{ textAlign: 'center' }}>
+              <TYPE.main mb="4px">ETH is not supported.</TYPE.main>
+              {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
+            </GreyCard>
+            ) : currencies[Field.INPUT]?.symbol == 'MKR' ? (
+              <GreyCard style={{ textAlign: 'center' }}>
+                <TYPE.main mb="4px">MKR is not supported.</TYPE.main>
+                {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
+              </GreyCard>
+            ) : (
+            <BottomGrouping>
+              <ButtonError
+                onClick={() => {
+                  // hadaleGasModalEnable()
+                  hadaleIsGasModal()
+                }}
+                id="swap-button"
+                disabled={!isValid || (priceImpactSeverity > 3 && !isExpertMode) || !!swapCallbackError}
+                error={isValid && priceImpactSeverity > 2 && !swapCallbackError}
+              >
+                <Text fontSize={20} fontWeight={500}>
+                  {swapInputError
+                    ? swapInputError
+                    : priceImpactSeverity > 3 && !isExpertMode
+                    ? `Price Impact Too High`
+                    : `Swap${priceImpactSeverity > 2 ? ' Anyway' : ''}`}
+                </Text>
+              </ButtonError>
+            </BottomGrouping>
+          )}
+
+          {/* // Original */}
+          {/* <BottomGrouping>
             {swapIsUnsupported ? (
               <ButtonPrimary disabled={true}>
                 <TYPE.main mb="4px">Unsupported Asset</TYPE.main>
@@ -513,9 +734,58 @@ export default function Swap({ history }: RouteComponentProps) {
             ) : toggledVersion !== DEFAULT_VERSION && defaultTrade ? (
               <DefaultVersionLink />
             ) : null}
+          </BottomGrouping> */}
+
+          {/* // TRIAL  */}
+
+          {/* <BottomGrouping>
+            {
+              <ButtonError
+                onClick={() => {
+                  handleDeposit()
+                }}
+                id="swap-button"
+                error={isValid && priceImpactSeverity > 2 && !swapCallbackError}
+              >
+                <Text fontSize={20} fontWeight={500}>
+                  {'Forward Swap'}
+                </Text>
+              </ButtonError>
+            }
+            {showApproveFlow && (
+              <Column style={{ marginTop: '1rem' }}>
+                <ProgressSteps steps={[approval === ApprovalState.APPROVED]} />
+              </Column>
+            )}
+            {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
+            {betterTradeLinkV2 && !swapIsUnsupported && toggledVersion === Version.v1 ? (
+              <BetterTradeLink version={betterTradeLinkV2} />
+            ) : toggledVersion !== DEFAULT_VERSION && defaultTrade ? (
+              <DefaultVersionLink />
+            ) : null}
           </BottomGrouping>
+ */}
+          {isGasModal ? (
+            <BottomGrouping>
+              <GasModal
+                handleDeposit={handleDeposit}
+                path0={trade && trade.route.path[0].address}
+                path1={trade && trade.route.path[1].address}
+                paths={paths}
+                inputToken={trade && trade.route.input.symbol}
+                decimals={trade && trade.inputAmount.currency.decimals}
+                inputAmount={formattedAmounts[Field.INPUT]}
+                hadaleGasModalEnable={hadaleGasModalEnable}
+                setGasTokenAndSwapCallback={setGasTokenAndSwapCallback}
+                wipeInput={wipeInput}
+              />
+            </BottomGrouping>
+          ) : (
+            ''
+          )}
         </Wrapper>
       </AppBody>
+      
       {!swapIsUnsupported ? (
         <AdvancedSwapDetailsDropdown trade={trade} />
       ) : (

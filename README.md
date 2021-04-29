@@ -1,67 +1,34 @@
-# Uniswap Interface
+# Forward Swap(Pay Gas fees in Stable-coin and Meta Transaction for Uniswap trade).
 
-[![Unit Tests](https://github.com/Uniswap/uniswap-interface/actions/workflows/unit-tests.yaml/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions/workflows/unit-tests.yaml)
-[![Integration Tests](https://github.com/Uniswap/uniswap-interface/actions/workflows/integration-tests.yaml/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions/workflows/integration-tests.yaml)
-[![Lint](https://github.com/Uniswap/uniswap-interface/actions/workflows/lint.yml/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions/workflows/lint.yml)
-[![Release](https://github.com/Uniswap/uniswap-interface/actions/workflows/release.yaml/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions/workflows/release.yaml)
+Forward swap is a Decentralized exchange to swap ERC20-ERC20 tokens without ETH.
+You can pay gas fees in any stablecoin like DAI, USDC, USDT.
+Transaction will be go through meta-transaction and user's gas fees will pay in stablecoin instead ETH. SO, user does not have to buy eth for trade.
 
-An open source interface for Uniswap -- a protocol for decentralized exchange of Ethereum tokens.
+Forward Swap App's smart contract is using Uniswap V2 smart contrat internally to swap tokens.
 
-- Website: [uniswap.org](https://uniswap.org/)
-- Interface: [app.uniswap.org](https://app.uniswap.org)
-- Docs: [uniswap.org/docs/](https://uniswap.org/docs/)
-- Twitter: [@UniswapProtocol](https://twitter.com/UniswapProtocol)
-- Reddit: [/r/Uniswap](https://www.reddit.com/r/Uniswap/)
-- Email: [contact@uniswap.org](mailto:contact@uniswap.org)
-- Discord: [Uniswap](https://discord.gg/FCfyBSbCU5)
-- Whitepaper: [Link](https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig)
+## Brief
 
-## Accessing the Uniswap Interface
+Forward swap is a decentralized exchange on top of Biconomy-forward-swap and Uniswap-V2 protocols. If someone wants to exchange erc20-erc20 tokens then he needs to eth as a gas fees. forward swap solve this problem and now if you do not have eth and you want to swap token and you want to pay fees in other stablecoin token like DAI, USDC and USDT then it is possible using forward swap meta transaction. So, In summary you can swap in any other stable coin instead ETH gas fees.
 
-To access the Uniswap Interface, use an IPFS gateway link from the
-[latest release](https://github.com/Uniswap/uniswap-interface/releases/latest), 
-or visit [app.uniswap.org](https://app.uniswap.org).
+## What we used to build
 
-## Listing a token
+1). Biconomy Forward Swap protocol  
+2). Uniswap-V2 protocol  
+3). Uniswap-Interface (open-source Frontend)  
+4). Solidity  
+5). React-JS  
+6). EtherJS  
 
-Please see the
-[@uniswap/default-token-list](https://github.com/uniswap/default-token-list) 
-repository.
+## Run
 
-## Development
+1). clone this repo  
+2). yarn  
+3). yarn start
 
-### Install Dependencies
+## Live
 
-```bash
-yarn
-```
+[Forward Swap](https://forwardswap.io)
 
-### Run
+## Contacts
 
-```bash
-yarn start
-```
-
-### Configuring the environment (optional)
-
-To have the interface default to a different network when a wallet is not connected:
-
-1. Make a copy of `.env` named `.env.local`
-2. Change `REACT_APP_NETWORK_ID` to `"{YOUR_NETWORK_ID}"`
-3. Change `REACT_APP_NETWORK_URL` to e.g. `"https://{YOUR_NETWORK_ID}.infura.io/v3/{YOUR_INFURA_KEY}"` 
-
-Note that the interface only works on testnets where both 
-[Uniswap V2](https://uniswap.org/docs/v2/smart-contracts/factory/) and 
-[multicall](https://github.com/makerdao/multicall) are deployed.
-The interface will not work on other networks.
-
-## Contributions
-
-**Please open all pull requests against the `main` branch.** 
-CI checks will run against all PRs.
-
-## Accessing Uniswap Interface V1
-
-The Uniswap Interface supports swapping against, and migrating or removing liquidity from Uniswap V1. However,
-if you would like to use Uniswap V1, the Uniswap V1 interface for mainnet and testnets is accessible via IPFS gateways 
-linked from the [v1.0.0 release](https://github.com/Uniswap/uniswap-interface/releases/tag/v1.0.0).
+[Twitter](https://twitter.com/RadadiyaSunny)

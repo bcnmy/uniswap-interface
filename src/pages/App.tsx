@@ -1,5 +1,8 @@
 import React, { Suspense } from 'react'
 import { Route, Switch } from 'react-router-dom'
+
+import './App.css'
+
 import styled from 'styled-components'
 import GoogleAnalyticsReporter from '../components/analytics/GoogleAnalyticsReporter'
 import AddressClaimModal from '../components/claim/AddressClaimModal'
@@ -48,7 +51,7 @@ const BodyWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding-top: 100px;
+  padding-top: 25px;
   align-items: center;
   flex: 1;
   overflow-y: auto;

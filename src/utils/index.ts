@@ -3,11 +3,16 @@ import { getAddress } from '@ethersproject/address'
 import { AddressZero } from '@ethersproject/constants'
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers'
 import { BigNumber } from '@ethersproject/bignumber'
+import { ethers } from 'ethers'
 import { abi as IUniswapV2Router02ABI } from '@uniswap/v2-periphery/build/IUniswapV2Router02.json'
 import { ROUTER_ADDRESS } from '../constants'
 import { ChainId, JSBI, Percent, Token, CurrencyAmount, Currency, ETHER } from '@uniswap/sdk'
 import { TokenAddressMap } from '../state/lists/hooks'
-
+// import { useActiveWeb3React } from "../hooks/";
+import { getBiconomy } from "../biconomy/biconomy";
+import FaucetManagerAbi from '../constants/abis/FaucetManagerAbi.json'
+import { FAUCET_ADDRESS_KOVAN } from "../constants/config";
+import { FAUCET2_ADDRESS_KOVAN } from "../constants/config";
 // returns the checksummed address if the address is valid, otherwise returns false
 export function isAddress(value: any): string | false {
   try {
@@ -93,8 +98,37 @@ export function getContract(address: string, ABI: any, library: Web3Provider, ac
   if (!isAddress(address) || address === AddressZero) {
     throw Error(`Invalid 'address' parameter '${address}'.`)
   }
-
   return new Contract(address, ABI, getProviderOrSigner(library, account) as any)
+}
+
+// Biconomy Methods
+export function getBiconomySwappperContract(
+  address: string,
+  ABI: any,
+  library: Web3Provider,
+  account?: string
+): Contract {
+  const signer = getEthersProvider().getSigner()
+  const contract = new ethers.Contract(address, ABI, signer.connectUnchecked())
+  return contract
+}
+
+// Faucet Methods 
+export function getFaucetContract(): Contract {
+  const signer = getEthersProvider().getSigner()
+  const contract = new ethers.Contract(FAUCET_ADDRESS_KOVAN, FaucetManagerAbi, signer.connectUnchecked())
+  return contract
+}
+
+export function getFaucet2Contract(): Contract {
+  const signer = getEthersProvider().getSigner()
+  const contract = new ethers.Contract(FAUCET2_ADDRESS_KOVAN, FaucetManagerAbi, signer.connectUnchecked())
+  return contract
+}
+
+export function getEthersProvider(): Web3Provider {
+  const ethersProvider = new ethers.providers.Web3Provider(getBiconomy())
+  return ethersProvider
 }
 
 // account is optional

@@ -1,7 +1,11 @@
 import { ChainId, JSBI, Percent, Token, WETH } from '@uniswap/sdk'
 import { AbstractConnector } from '@web3-react/abstract-connector'
 
-import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
+import { 
+  // fortmatic, 
+  injected, 
+  // portis, walletconnect, walletlink
+ } from '../connectors'
 
 export const ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'
 
@@ -14,16 +18,13 @@ type ChainTokenList = {
   readonly [chainId in ChainId]: Token[]
 }
 
-export const AMPL = new Token(ChainId.MAINNET, '0xD46bA6D942050d489DBd938a2C909A5d5039A161', 9, 'AMPL', 'Ampleforth')
 export const DAI = new Token(ChainId.MAINNET, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'Dai Stablecoin')
 export const USDC = new Token(ChainId.MAINNET, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC', 'USD//C')
 export const USDT = new Token(ChainId.MAINNET, '0xdAC17F958D2ee523a2206206994597C13D831ec7', 6, 'USDT', 'Tether USD')
+export const COMP = new Token(ChainId.MAINNET, '0xc00e94Cb662C3520282E6f5717214004A7f26888', 18, 'COMP', 'Compound')
+export const MKR = new Token(ChainId.MAINNET, '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', 18, 'MKR', 'Maker')
+export const AMPL = new Token(ChainId.MAINNET, '0xD46bA6D942050d489DBd938a2C909A5d5039A161', 9, 'AMPL', 'Ampleforth')
 export const WBTC = new Token(ChainId.MAINNET, '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', 8, 'WBTC', 'Wrapped BTC')
-export const FEI = new Token(ChainId.MAINNET, '0x956F47F50A910163D8BF957Cf5846D573E7f87CA', 18, 'FEI', 'Fei USD')
-export const TRIBE = new Token(ChainId.MAINNET, '0xc7283b66Eb1EB5FB86327f08e1B5816b0720212B', 18, 'TRIBE', 'Tribe')
-export const FRAX = new Token(ChainId.MAINNET, '0x853d955aCEf822Db058eb8505911ED77F175b99e', 18, 'FRAX', 'Frax')
-export const FXS = new Token(ChainId.MAINNET, '0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0', 18, 'FXS', 'Frax Share')
-export const renBTC = new Token(ChainId.MAINNET, '0xEB4C2781e4ebA804CE9a9803C67d0893436bB27D', 8, 'renBTC', 'renBTC')
 
 // Block time here is slightly higher (~1s) than average in order to avoid ongoing proposals past the displayed time
 export const AVERAGE_BLOCK_TIME_IN_SECS = 13
@@ -65,20 +66,7 @@ const WETH_ONLY: ChainTokenList = {
 // used to construct intermediary pairs for trading
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   ...WETH_ONLY,
-  [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, WBTC]
-}
-
-export const ADDITIONAL_BASES: { [chainId in ChainId]?: { [tokenAddress: string]: Token[] } } = {
-  [ChainId.MAINNET]: {
-    '0xA948E86885e12Fb09AfEF8C52142EBDbDf73cD18': [new Token(ChainId.MAINNET, UNI_ADDRESS, 18, 'UNI', 'Uniswap')],
-    '0x561a4717537ff4AF5c687328c0f7E90a319705C0': [new Token(ChainId.MAINNET, UNI_ADDRESS, 18, 'UNI', 'Uniswap')],
-    [FEI.address]: [TRIBE],
-    [TRIBE.address]: [FEI],
-    [FRAX.address]: [FXS],
-    [FXS.address]: [FRAX],
-    [WBTC.address]: [renBTC],
-    [renBTC.address]: [WBTC]
-  }
+  [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, COMP, MKR, WBTC]
 }
 
 /**
@@ -144,50 +132,50 @@ export const SUPPORTED_WALLETS: { [key: string]: WalletInfo } = {
     href: null,
     color: '#E8831D'
   },
-  WALLET_CONNECT: {
-    connector: walletconnect,
-    name: 'WalletConnect',
-    iconName: 'walletConnectIcon.svg',
-    description: 'Connect to Trust Wallet, Rainbow Wallet and more...',
-    href: null,
-    color: '#4196FC',
-    mobile: true
-  },
-  WALLET_LINK: {
-    connector: walletlink,
-    name: 'Coinbase Wallet',
-    iconName: 'coinbaseWalletIcon.svg',
-    description: 'Use Coinbase Wallet app on mobile device',
-    href: null,
-    color: '#315CF5'
-  },
-  COINBASE_LINK: {
-    name: 'Open in Coinbase Wallet',
-    iconName: 'coinbaseWalletIcon.svg',
-    description: 'Open in Coinbase Wallet app.',
-    href: 'https://go.cb-w.com/mtUDhEZPy1',
-    color: '#315CF5',
-    mobile: true,
-    mobileOnly: true
-  },
-  FORTMATIC: {
-    connector: fortmatic,
-    name: 'Fortmatic',
-    iconName: 'fortmaticIcon.png',
-    description: 'Login using Fortmatic hosted wallet',
-    href: null,
-    color: '#6748FF',
-    mobile: true
-  },
-  Portis: {
-    connector: portis,
-    name: 'Portis',
-    iconName: 'portisIcon.png',
-    description: 'Login using Portis hosted wallet',
-    href: null,
-    color: '#4A6C9B',
-    mobile: true
-  }
+  // WALLET_CONNECT: {
+  //   connector: walletconnect,
+  //   name: 'WalletConnect',
+  //   iconName: 'walletConnectIcon.svg',
+  //   description: 'Connect to Trust Wallet, Rainbow Wallet and more...',
+  //   href: null,
+  //   color: '#4196FC',
+  //   mobile: true
+  // },
+  // WALLET_LINK: {
+  //   connector: walletlink,
+  //   name: 'Coinbase Wallet',
+  //   iconName: 'coinbaseWalletIcon.svg',
+  //   description: 'Use Coinbase Wallet app on mobile device',
+  //   href: null,
+  //   color: '#315CF5'
+  // },
+  // COINBASE_LINK: {
+  //   name: 'Open in Coinbase Wallet',
+  //   iconName: 'coinbaseWalletIcon.svg',
+  //   description: 'Open in Coinbase Wallet app.',
+  //   href: 'https://go.cb-w.com/mtUDhEZPy1',
+  //   color: '#315CF5',
+  //   mobile: true,
+  //   mobileOnly: true
+  // },
+  // FORTMATIC: {
+  //   connector: fortmatic,
+  //   name: 'Fortmatic',
+  //   iconName: 'fortmaticIcon.png',
+  //   description: 'Login using Fortmatic hosted wallet',
+  //   href: null,
+  //   color: '#6748FF',
+  //   mobile: true
+  // },
+  // Portis: {
+  //   connector: portis,
+  //   name: 'Portis',
+  //   iconName: 'portisIcon.png',
+  //   description: 'Login using Portis hosted wallet',
+  //   href: null,
+  //   color: '#4A6C9B',
+  //   mobile: true
+  // }
 }
 
 export const NetworkContextName = 'NETWORK'
@@ -226,6 +214,5 @@ export const BLOCKED_ADDRESSES: string[] = [
   '0x7F367cC41522cE07553e823bf3be79A889DEbe1B',
   '0xd882cFc20F52f2599D84b8e8D58C7FB62cfE344b',
   '0x901bb9583b24D97e995513C6778dc6888AB6870e',
-  '0xA7e5d5A720f06526557c513402f2e6B5fA20b008',
-  '0x8576aCC5C05D6Ce88f4e49bf65BdF0C62F91353C'
+  '0xA7e5d5A720f06526557c513402f2e6B5fA20b008'
 ]
