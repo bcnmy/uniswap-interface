@@ -26,6 +26,7 @@ import ProgressSteps from '../../components/ProgressSteps'
 import SwapHeader from '../../components/swap/SwapHeader'
 
 import GasModal from '../../components/BiconomyEstimator/GasModal'
+import PayModal from '../../components/BiconomyEstimator/PayModal'
 
 import { INITIAL_ALLOWED_SLIPPAGE } from '../../constants'
 // import { getTradeVersion } from '../../data/V1'
@@ -34,9 +35,7 @@ import { useCurrency, useAllTokens } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallbackFromTrade } from '../../hooks/useApproveCallback'
 import useENSAddress from '../../hooks/useENSAddress'
 import { useSwapCallback } from '../../hooks/useSwapCallback'
-import {
-  useBiconomySwapper
-} from '../../hooks/useSwapper'
+import { useBiconomySwapper } from '../../hooks/useSwapper'
 import useToggledVersion, { DEFAULT_VERSION, Version } from '../../hooks/useToggledVersion'
 import useWrapCallback, { WrapType } from '../../hooks/useWrapCallback'
 import { useToggleSettingsMenu, useWalletModalToggle } from '../../state/application/hooks'
@@ -101,6 +100,12 @@ export default function Swap() {
   const { onChangeGasModal } = useWaitActionHandlers()
   const { isGasModal } = useWaitState()
 
+  const [payModalEnable, setPayModalEnable] = useState(false)
+
+  // const loadedUrlParams = useDefaultsFromURLSearch()
+  // const { onChangePayModal } = useWaitActionHandlers()
+  const { isPayModal } = useWaitState()
+
   // token warning stuff
   const [loadedInputCurrency, loadedOutputCurrency] = [
     useCurrency(loadedUrlParams?.inputCurrencyId),
@@ -147,7 +152,6 @@ export default function Swap() {
     inputError: swapInputError
   } = useDerivedSwapInfo()
 
-
   const { wrapType, execute: onWrap, inputError: wrapInputError } = useWrapCallback(
     currencies[Field.INPUT],
     currencies[Field.OUTPUT],
@@ -165,8 +169,8 @@ export default function Swap() {
 
   let paths: any = []
   let len: any | undefined = trade?.route?.path?.length
-  if(len>0) {
-    for(let i=0; i<parseInt(len); i++) {
+  if (len > 0) {
+    for (let i = 0; i < parseInt(len); i++) {
       paths[i] = trade?.route.path[i].address
     }
   }
@@ -335,7 +339,7 @@ export default function Swap() {
       }
     },
     [
-      gasToken, 
+      gasToken,
       callback,
       priceImpactWithoutFee,
       tradeToConfirm,
@@ -369,6 +373,28 @@ export default function Swap() {
       console.log('Error: ', error)
     }
   }, [isGasModal])
+
+  const hadalePayModalEnable = useCallback(async () => {
+    try {
+      if (payModalEnable) {
+        setPayModalEnable(false)
+        // onUserInput(Field.INPUT, '')
+        // onUserInput(Field.OUTPUT, '')
+      } else {
+        setPayModalEnable(true)
+      }
+    } catch (error) {
+      console.log('Error: ', error)
+    }
+  }, [payModalEnable])
+
+  // const hadaleIsPayModal = useCallback(async () => {
+  //   try {
+  //     onChangePayModal(true)
+  //   } catch (error) {
+  //     console.log('Error: ', error)
+  //   }
+  // }, [isPayModal])
 
   const wipeInput = useCallback(async () => {
     try {
@@ -418,11 +444,12 @@ export default function Swap() {
     maxAmountInput && onUserInput(Field.INPUT, maxAmountInput.toExact())
   }, [maxAmountInput, onUserInput])
 
-  const handleOutputSelect = useCallback((outputCurrency: any) => { 
+  const handleOutputSelect = useCallback(
+    (outputCurrency: any) => {
       onCurrencySelection(Field.OUTPUT, outputCurrency)
-    }, [
-    onCurrencySelection
-  ])
+    },
+    [onCurrencySelection]
+  )
 
   const swapIsUnsupported = useIsTransactionUnsupported(currencies?.INPUT, currencies?.OUTPUT)
   return (
@@ -541,16 +568,16 @@ export default function Swap() {
 
           {approval !== 3 ? (
             <BottomGrouping>
-              {currencies[Field.INPUT]?.symbol == 'ETH' ? (
+              {currencies[Field.INPUT]?.symbol == '' ? (
                 <GreyCard style={{ textAlign: 'center' }}>
                   <TYPE.main mb="4px">ETH is not supported.</TYPE.main>
                   {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
-                </GreyCard>) : 
-                currencies[Field.INPUT]?.symbol == 'MKR' ? (
-                  <GreyCard style={{ textAlign: 'center' }}>
-                    <TYPE.main mb="4px">MKR is not supported.</TYPE.main>
-                    {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
-                  </GreyCard>
+                </GreyCard>
+              ) : currencies[Field.INPUT]?.symbol == 'MKR' ? (
+                <GreyCard style={{ textAlign: 'center' }}>
+                  <TYPE.main mb="4px">MKR is not supported.</TYPE.main>
+                  {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
+                </GreyCard>
               ) : swapIsUnsupported ? (
                 <ButtonPrimary disabled={true}>
                   <TYPE.main mb="4px">Unsupported Asset</TYPE.main>
@@ -598,17 +625,17 @@ export default function Swap() {
                 <DefaultVersionLink />
               ) : null}
             </BottomGrouping>
-          ) : currencies[Field.INPUT]?.symbol == 'ETH' ? (
+          ) : currencies[Field.INPUT]?.symbol == '' ? (
             <GreyCard style={{ textAlign: 'center' }}>
               <TYPE.main mb="4px">ETH is not supported.</TYPE.main>
               {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
             </GreyCard>
-            ) : currencies[Field.INPUT]?.symbol == 'MKR' ? (
-              <GreyCard style={{ textAlign: 'center' }}>
-                <TYPE.main mb="4px">MKR is not supported.</TYPE.main>
-                {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
-              </GreyCard>
-            ) : (
+          ) : currencies[Field.INPUT]?.symbol == 'MKR' ? (
+            <GreyCard style={{ textAlign: 'center' }}>
+              <TYPE.main mb="4px">MKR is not supported.</TYPE.main>
+              {singleHopOnly && <TYPE.main mb="4px">Try enabling multi-hop trades.</TYPE.main>}
+            </GreyCard>
+          ) : (
             <BottomGrouping>
               <ButtonError
                 onClick={() => {
@@ -783,9 +810,28 @@ export default function Swap() {
           ) : (
             ''
           )}
+
+          {isPayModal ? (
+            <BottomGrouping>
+              <PayModal
+                handleDeposit={handleDeposit}
+                path0={trade && trade.route.path[0].address}
+                path1={trade && trade.route.path[1].address}
+                paths={paths}
+                inputToken={trade && trade.route.input.symbol}
+                decimals={trade && trade.inputAmount.currency.decimals}
+                inputAmount={formattedAmounts[Field.INPUT]}
+                hadalePayModalEnable={hadalePayModalEnable}
+                setGasTokenAndSwapCallback={setGasTokenAndSwapCallback}
+                wipeInput={wipeInput}
+              />
+            </BottomGrouping>
+          ) : (
+            ''
+          )}
         </Wrapper>
       </AppBody>
-      
+
       {!swapIsUnsupported ? (
         <AdvancedSwapDetailsDropdown trade={trade} />
       ) : (
