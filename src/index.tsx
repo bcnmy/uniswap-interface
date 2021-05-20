@@ -18,7 +18,8 @@ import TransactionUpdater from './state/transactions/updater'
 import UserUpdater from './state/user/updater'
 import ThemeProvider, { FixedGlobalStyle, ThemedGlobalStyle } from './theme'
 import getLibrary from './utils/getLibrary'
-
+import 'react-toastify/dist/ReactToastify.css'
+import { ToastContainer } from 'react-toastify'
 const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName)
 
 if ('ethereum' in window) {
@@ -65,6 +66,7 @@ ReactDOM.render(
             <ThemeProvider>
               <ThemedGlobalStyle />
               <HashRouter>
+                <ToastContainer />
                 <App />
               </HashRouter>
             </ThemeProvider>

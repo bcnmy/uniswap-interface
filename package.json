@@ -130,6 +130,7 @@
     "bn.js": "^5.2.0",
     "easy-peasy": "^4.0.1",
     "react-responsive-modal": "^6.0.1",
+    "react-toastify": "^7.0.4",
     "sweetalert2": "^10.15.2",
     "web3modal": "^1.9.3"
   }

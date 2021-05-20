@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;600&display=swap');
 
 :root {
   --pastel-dark-blue: #a5beff;
@@ -28,7 +28,7 @@ h4,
 h5,
 h6,
 p {
-  font-family: "Manrope", sans-serif !important;
+  font-family: 'Manrope', sans-serif !important;
 }
 
 .bg-blue {
@@ -179,7 +179,7 @@ p {
 }
 
 .active-tab {
-  border-bottom: 3px solid var(--pastel-dark-teal);
+  /* border-bottom: 3px solid var(--pastel-dark-teal); */
   font-weight: 600;
 }
 
@@ -228,8 +228,9 @@ p {
 
 .approve-token > .note {
   font-weight: 200;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   padding: 1rem;
+  text-align: center;
 }
 
 .approve-token-button {
@@ -298,4 +299,20 @@ p {
 }
 .token-action > .pay-tx > .buttons > .proceed {
   background: var(--pastel-green);
+}
+
+.Toastify__toast-body {
+  font-size: 14px !important;
+}
+
+.Toastify__toast-container {
+  margin-left: 18rem !important;
+}
+
+.Toastify__toast {
+  top: 75px;
+}
+
+.react-responsive-modal-modal {
+  border-radius: 30px;
 }

@@ -31,7 +31,7 @@
       },
       {
         "type": "address",
-        "name": "_approved",
+        "name": "_Tra",
         "indexed": true
       },
       {
