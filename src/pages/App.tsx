@@ -33,6 +33,7 @@ import Swap from './Swap'
 import { OpenClaimAddressModalAndRedirectToSwap, RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
 import Vote from './Vote'
 import VotePage from './Vote/VotePage'
+import Footer from '../components/Footer/footer'
 
 const AppWrapper = styled.div`
   display: flex;
@@ -118,6 +119,7 @@ export default function App() {
             </Switch>
           </Web3ReactManager>
           <Marginer />
+          <Footer />
         </BodyWrapper>
       </AppWrapper>
     </Suspense>

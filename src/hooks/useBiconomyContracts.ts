@@ -16,6 +16,7 @@ import { getPermitClient, getErcForwarderClient } from "../biconomy/biconomy";
 import { useWaitActionHandlers } from '../state/waitmodal/hooks'
 import { getEtherscanLink } from '../utils'
 
+
 const domainType = [
   { name: 'name', type: 'string' },
   { name: 'version', type: 'string' },
