@@ -168,6 +168,8 @@ export function useBiconomySwapper(
   } = useWaitActionHandlers()
   // const tradeVersion = getTradeVersion(trade)
 
+  
+
   let paths: any = []
   let len: any | undefined = trade?.route?.path?.length
   if (len > 0) {
@@ -235,6 +237,8 @@ export function useBiconomySwapper(
                 data: txResponse.data
               })
               const tx = builtTx.request
+
+              console.log(tx, 'here2')
 
               let transaction: any
               try {
@@ -585,6 +589,8 @@ export function useSwapper(): {
                 data: txResponse.data
               })
               const tx = builtTx.request
+
+              console.log(tx + 'here1')
 
               const transaction = await getErcForwarderClient().sendTxEIP712({ req: tx })
               //returns an object containing code, log, message, txHash
