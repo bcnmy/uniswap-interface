@@ -22,11 +22,12 @@ import { MULTICALL_ABI, MULTICALL_NETWORKS } from '../constants/multicall'
 import { V1_EXCHANGE_ABI, V1_FACTORY_ABI, V1_FACTORY_ADDRESSES } from '../constants/v1'
 import { getContract } from '../utils'
 import { useActiveWeb3React } from './index'
+import CHILL_ABI from '../constants/abis/chill.json'
+// import BICONOMYSWAPPER_ABI from '../constants/abis/biconomyswapper.json'
 
 // returns null on errors
 function useContract(address: string | undefined, ABI: any, withSignerIfPossible = true): Contract | null {
   const { library, account } = useActiveWeb3React()
-
   return useMemo(() => {
     if (!address || !ABI || !library) return null
     try {
@@ -128,3 +129,11 @@ export function useSocksController(): Contract | null {
     false
   )
 }
+
+export function useChill(): Contract | null {
+  return useContract('0xa15E697806711003E635bEe08CA049130C4917fd', CHILL_ABI)
+}
+
+// export function useBiconomySwapper(): Contract | null {
+//   return useContract('0xD6689f303fA491f1fBba919C1AFa619Bd8E595e3', BICONOMYSWAPPER_ABI)
+// }
