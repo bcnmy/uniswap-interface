@@ -8,7 +8,7 @@ export interface GasPrice {
 
 export const initialState: GasPrice = { fast: utils.parseEther('0.00000002').toString() }
 
-export default createReducer(initialState, (builder) =>
+export default createReducer(initialState, builder =>
   builder.addCase(newEstimate, (gasprice, { payload: { fast } }) => {
     gasprice.fast = fast
   })

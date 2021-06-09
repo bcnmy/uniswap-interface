@@ -25,10 +25,10 @@ const store = configureStore({
     burn,
     multicall,
     lists,
-    gasprice,
+    gasprice
   },
   middleware: [...getDefaultMiddleware(), save({ states: PERSISTED_KEYS })],
-  preloadedState: load({ states: PERSISTED_KEYS }),
+  preloadedState: load({ states: PERSISTED_KEYS })
 })
 
 store.dispatch(updateVersion())

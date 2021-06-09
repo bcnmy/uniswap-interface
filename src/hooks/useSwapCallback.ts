@@ -16,7 +16,7 @@ import { DaiSwapClient, UNISWAP_ROUTER_V3_ADDRESS_ROPSTEN, UNISWAP_ROUTER_V3_ADD
 export enum SwapCallbackState {
   INVALID,
   LOADING,
-  VALID,
+  VALID
 }
 
 interface SwapCall {
@@ -75,7 +75,7 @@ function useSwapCallArguments(
             feeOnTransfer: false,
             allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
             recipient,
-            ttl: deadline,
+            ttl: deadline
           })
         )
 
@@ -85,7 +85,7 @@ function useSwapCallArguments(
               feeOnTransfer: true,
               allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
               recipient,
-              ttl: deadline,
+              ttl: deadline
             })
           )
         }
@@ -95,12 +95,12 @@ function useSwapCallArguments(
           v1SwapArguments(trade, {
             allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
             recipient,
-            ttl: deadline,
+            ttl: deadline
           })
         )
         break
     }
-    return swapMethods.map((parameters) => ({ parameters, contract }))
+    return swapMethods.map(parameters => ({ parameters, contract }))
   }, [account, allowedSlippage, chainId, deadline, library, recipient, trade, v1Exchange])
 }
 
@@ -142,7 +142,7 @@ export function useSwapCallback(
       callback: async function onSwap(): Promise<string> {
         const {
           parameters: { methodName, args, value },
-          contract,
+          contract
         } = swapCalls[0]
 
         if (!BigNumber.from(value).eq(0)) {
@@ -197,7 +197,7 @@ export function useSwapCallback(
 
             const hash = response
             addTransaction({ hash } as any, {
-              summary: withVersion,
+              summary: withVersion
             })
 
             return hash
@@ -213,7 +213,7 @@ export function useSwapCallback(
             }
           })
       },
-      error: null,
+      error: null
     }
   }, [trade, library, account, chainId, recipient, recipientAddressOrName, swapCalls, addTransaction])
 }

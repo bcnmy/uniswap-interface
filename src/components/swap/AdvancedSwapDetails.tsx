@@ -22,7 +22,7 @@ function TradeSummary({ trade, allowedSlippage }: { trade: Trade; allowedSlippag
   const { priceImpactWithoutFee, realizedLPFee } = computeTradePriceBreakdown(trade)
   const isExactIn = trade.tradeType === TradeType.EXACT_INPUT
   const slippageAdjustedAmounts = computeSlippageAdjustedAmounts(trade, allowedSlippage)
-  const state = useSelector<AppState, AppState['gasprice']>((state) => state.gasprice)
+  const state = useSelector<AppState, AppState['gasprice']>(state => state.gasprice)
 
   const { lowestFeeEstimateEth, largestFeeEstimate, largestFeeEstimateEth } = estimateGasCosts(state)
 

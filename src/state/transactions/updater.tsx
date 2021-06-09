@@ -21,7 +21,7 @@ export default function Updater() {
   const lastBlockNumber = useBlockNumber()
 
   const dispatch = useDispatch<AppDispatch>()
-  const state = useSelector<AppState, AppState['transactions']>((state) => state.transactions)
+  const state = useSelector<AppState, AppState['transactions']>(state => state.transactions)
 
   const transactions = chainId ? state[chainId] ?? {} : {}
 
@@ -39,16 +39,16 @@ export default function Updater() {
       chainId === 3 ? '0xe41743ca34762b84004d3abe932443fc51d561d5' : '0x02111c619c5b7e2aa5c1f5e09815be264d925422'
     const providerClient = new AnyDotSenderProviderClient(library.provider, {
       apiUrl: apiUrl,
-      receiptSignerAddress: receiptSigner,
+      receiptSignerAddress: receiptSigner
     })
 
     Object.keys(transactions)
-      .filter((hash) => shouldCheck(lastBlockNumber, transactions[hash]))
-      .forEach((hash) => {
+      .filter(hash => shouldCheck(lastBlockNumber, transactions[hash]))
+      .forEach(hash => {
         dispatch(checkedTransaction({ chainId, hash, blockNumber: lastBlockNumber }))
         providerClient
           .waitForTransaction(hash)
-          .then((receipt) => {
+          .then(receipt => {
             dispatch(
               finalizeTransaction({
                 chainId,
@@ -61,8 +61,8 @@ export default function Updater() {
                   status: receipt.status,
                   to: receipt.to,
                   transactionHash: receipt.transactionHash,
-                  transactionIndex: receipt.transactionIndex,
-                },
+                  transactionIndex: receipt.transactionIndex
+                }
               })
             )
 
@@ -71,13 +71,13 @@ export default function Updater() {
                 txn: {
                   hash: receipt.transactionHash,
                   success: receipt.status === 1,
-                  summary: transactions[hash]?.summary,
-                },
+                  summary: transactions[hash]?.summary
+                }
               },
               hash
             )
           })
-          .catch((error) => {
+          .catch(error => {
             console.error(`failed to check transaction hash: ${hash}`, error)
           })
       })

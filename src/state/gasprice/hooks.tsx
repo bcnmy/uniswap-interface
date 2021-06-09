@@ -10,7 +10,9 @@ export function getLatestGasPrice(): string {
   const third = BigNumber.from(fast).div(3)
 
   // Add 1/3 onto the gas price...
-  return BigNumber.from(fast).add(third).toString()
+  return BigNumber.from(fast)
+    .add(third)
+    .toString()
 }
 
 export function isOutputSufficientToPayFee(
@@ -24,7 +26,9 @@ export function isOutputSufficientToPayFee(
   // Whitelisted outputs
   // We can look up the exchange rate and make a judgement
 
-  const gwei = BigNumber.from(largestEstimateInGwei).div(10).mul(2)
+  const gwei = BigNumber.from(largestEstimateInGwei)
+    .div(10)
+    .mul(2)
 
   if (BigNumber.from(input).lt(utils.parseEther(gwei.toString()))) {
     return 'You must swap at least ' + gwei.toString() + ' ' + amountIn.currency.symbol
@@ -38,7 +42,7 @@ export function isOutputSufficientToPayFee(
 }
 
 export function useGasPriceState(): AppState['gasprice'] {
-  return useSelector<AppState, AppState['gasprice']>((state) => state.gasprice)
+  return useSelector<AppState, AppState['gasprice']>(state => state.gasprice)
 }
 
 export function estimateGasCosts(state: GasPrice, estimatedGasUsed?: number) {
@@ -71,6 +75,6 @@ export function estimateGasCosts(state: GasPrice, estimatedGasUsed?: number) {
     lowestFeeEstimate,
     lowestFeeEstimateEth,
     largestFeeEstimate,
-    largestFeeEstimateEth,
+    largestFeeEstimateEth
   }
 }
