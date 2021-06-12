@@ -99,7 +99,7 @@ const LowerSection = styled.div`
   flex-grow: 1;
   overflow: auto;
   background-color: ${({ theme }) => theme.bg2};
-  border-bottom-left-radius: 20px;
+  border-bottom-left-radius: 25px;
   border-bottom-right-radius: 20px;
 
   h5 {
@@ -200,7 +200,7 @@ const MainWalletAction = styled(WalletAction)`
   color: ${({ theme }) => theme.primary1};
 `
 
-function renderTransactions(transactions: string[]) {
+function renderTransactions(transactions) {
   return (
     <TransactionListWrapper>
       {transactions.map((hash, i) => {
@@ -212,8 +212,8 @@ function renderTransactions(transactions: string[]) {
 
 interface AccountDetailsProps {
   toggleWalletModal: () => void
-  pendingTransactions: string[]
-  confirmedTransactions: string[]
+  pendingTransactions: any[]
+  confirmedTransactions: any[]
   ENSName?: string
   openOptions: () => void
 }
@@ -254,40 +254,16 @@ export default function AccountDetails({
           <img src={WalletConnectIcon} alt={'wallet connect logo'} />
         </IconWrapper>
       )
-    } else if (connector === walletlink) {
-      return (
-        <IconWrapper size={16}>
-          <img src={CoinbaseWalletIcon} alt={'coinbase wallet logo'} />
-        </IconWrapper>
-      )
-    } else if (connector === fortmatic) {
-      return (
-        <IconWrapper size={16}>
-          <img src={FortmaticIcon} alt={'fortmatic logo'} />
-        </IconWrapper>
-      )
-    } else if (connector === portis) {
-      return (
-        <>
-          <IconWrapper size={16}>
-            <img src={PortisIcon} alt={'portis logo'} />
-            <MainWalletAction
-              onClick={() => {
-                portis.portis.showPortis()
-              }}
-            >
-              Show Portis
-            </MainWalletAction>
-          </IconWrapper>
-        </>
-      )
     }
-    return null
   }
 
-  const clearAllTransactionsCallback = useCallback(() => {
-    if (chainId) dispatch(clearAllTransactions({ chainId }))
-  }, [dispatch, chainId])
+  const clearAllTransactionsCallback = useCallback(
+    (event: React.MouseEvent) => {
+      event.preventDefault()
+      dispatch(clearAllTransactions({ chainId }))
+    },
+    [dispatch, chainId]
+  )
 
   return (
     <>
@@ -335,7 +311,7 @@ export default function AccountDetails({
                     <>
                       <div>
                         {getStatusIcon()}
-                        <p> {account && shortenAddress(account)}</p>
+                        <p> {shortenAddress(account)}</p>
                       </div>
                     </>
                   )}
@@ -346,21 +322,17 @@ export default function AccountDetails({
                   <>
                     <AccountControl>
                       <div>
-                        {account && (
-                          <Copy toCopy={account}>
-                            <span style={{ marginLeft: '4px' }}>Copy Address</span>
-                          </Copy>
-                        )}
-                        {chainId && account && (
-                          <AddressLink
-                            hasENS={!!ENSName}
-                            isENS={true}
-                            href={chainId && getEtherscanLink(chainId, ENSName, 'address')}
-                          >
-                            <LinkIcon size={16} />
-                            <span style={{ marginLeft: '4px' }}>View on Etherscan</span>
-                          </AddressLink>
-                        )}
+                        <Copy toCopy={account}>
+                          <span style={{ marginLeft: '4px' }}>Copy Address</span>
+                        </Copy>
+                        <AddressLink
+                          hasENS={!!ENSName}
+                          isENS={true}
+                          href={getEtherscanLink(chainId, ENSName, 'address')}
+                        >
+                          <LinkIcon size={16} />
+                          <span style={{ marginLeft: '4px' }}>View on Etherscan</span>
+                        </AddressLink>
                       </div>
                     </AccountControl>
                   </>
@@ -368,21 +340,17 @@ export default function AccountDetails({
                   <>
                     <AccountControl>
                       <div>
-                        {account && (
-                          <Copy toCopy={account}>
-                            <span style={{ marginLeft: '4px' }}>Copy Address</span>
-                          </Copy>
-                        )}
-                        {chainId && account && (
-                          <AddressLink
-                            hasENS={!!ENSName}
-                            isENS={false}
-                            href={getEtherscanLink(chainId, account, 'address')}
-                          >
-                            <LinkIcon size={16} />
-                            <span style={{ marginLeft: '4px' }}>View on Etherscan</span>
-                          </AddressLink>
-                        )}
+                        <Copy toCopy={account}>
+                          <span style={{ marginLeft: '4px' }}>Copy Address</span>
+                        </Copy>
+                        <AddressLink
+                          hasENS={!!ENSName}
+                          isENS={false}
+                          href={getEtherscanLink(chainId, account, 'address')}
+                        >
+                          <LinkIcon size={16} />
+                          <span style={{ marginLeft: '4px' }}>View on Etherscan</span>
+                        </AddressLink>
                       </div>
                     </AccountControl>
                   </>
